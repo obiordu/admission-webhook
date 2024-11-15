@@ -1,0 +1,114 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/your-org/admission-webhook
+  tag: latest
+  pullPolicy: Always
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 2000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 443
+
+ingress:
+  enabled: true
+  className: "alb"
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: ""  # Add your ACM certificate ARN
+  hosts:
+    - host: webhook.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - admission-webhook
+        topologyKey: kubernetes.io/hostname
+
+cert-manager:
+  enabled: true
+  installCRDs: true
+
+webhook:
+  tls:
+    enabled: true
+    secretName: webhook-tls
+  config:
+    logLevel: "info"
+    metricsEnabled: true
+    validationEnabled: true
+    mutationEnabled: true
+    imagePolicy:
+      allowedRegistries:
+        - docker.io
+        - gcr.io
+        - ghcr.io
+      denyLatestTag: true
+    securityPolicy:
+      enforceNonRoot: true
+      enforceReadOnlyRoot: true
+      enforcePrivilegedContainers: false
+    resourcePolicy:
+      enforceResourceLimits: true
+      defaultLimits:
+        cpu: "1"
+        memory: "1Gi"
+      defaultRequests:
+        cpu: "100m"
+        memory: "128Mi"
+
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
