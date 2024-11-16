@@ -12,16 +12,16 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from ..schemas.admission import AdmissionReview, AdmissionResponse
-from ..validators.security import SecurityContextValidator
-from ..validators.base import ValidatorChain
-from ..mutators.base import MutatorChain
-from ..mutators.defaults import (
+from app.schemas.admission import AdmissionReview, AdmissionResponse
+from app.validators.security import SecurityContextValidator
+from app.validators.base import ValidatorChain
+from app.mutators.base import MutatorChain
+from app.mutators.defaults import (
     DefaultLabelsAnnotationsMutator,
     DefaultSecurityContextMutator,
     DefaultResourcesMutator
 )
-from ..config import WebhookConfig
+from app.config import WebhookConfig
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -9,6 +9,7 @@ class WebhookConfig(BaseSettings):
     HOST: str = "0.0.0.0"
     TLS_CERT_FILE: Optional[str] = None
     TLS_KEY_FILE: Optional[str] = None
+    ALLOWED_HOSTS: List[str] = ["*"]
     
     # Logging and metrics
     LOG_LEVEL: str = "INFO"
